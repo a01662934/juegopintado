@@ -1,65 +1,81 @@
-from random import randrange, choice
+
 from turtle import *
+from freegames import vector
 
-from freegames import square, vector
+def line(start, end):
+    up()
+    goto(start.x, start.y)
+    down()
+    goto(end.x, end.y)
 
-# Definir una lista de colores, excepto rojo
-colors = ['blue', 'green', 'yellow', 'purple', 'orange']
+def square(start, end):
+    up()
+    goto(start.x, start.y)
+    down()
+    begin_fill()
 
-food = vector(0, 0)
-snake = [vector(10, 0)]
-aim = vector(0, -10)
+    for count in range(4):
+        forward(end.x - start.x)
+        left(90)
 
-# Escoger colores aleatorios para la serpiente y la comida, asegurándose que no sean iguales
-snake_color = choice(colors)
-food_color = choice([color for color in colors if color != snake_color])
+    end_fill()
 
-def change(x, y):
-    """Change snake direction."""
-    aim.x = x
-    aim.y = y
+def rectangle(start, end):
+    up()
+    goto(start.x, start.y)
+    down()
+    begin_fill()
 
-def inside(head):
-    """Return True if head inside boundaries."""
-    return -200 < head.x < 190 and -200 < head.y < 190
+    width = end.x - start.x
+    height = end.y - start.y
 
-def move():
-    """Move snake forward one segment."""
-    head = snake[-1].copy()
-    head.move(aim)
+    for _ in range(2):
+        forward(width)
+        left(90)
+        forward(height)
+        left(90)
 
-    if not inside(head) or head in snake:
-        square(head.x, head.y, 9, 'red')
-        update()
-        return
+    end_fill()
 
-    snake.append(head)
+def triangle(start, end):
+    up()
+    goto(start.x, start.y)
+    down()
+    begin_fill()
 
-    if head == food:
-        print('Snake:', len(snake))
-        food.x = randrange(-15, 15) * 10
-        food.y = randrange(-15, 15) * 10
+    for _ in range(3):
+        forward(end.x - start.x)
+        left(120)
+
+    end_fill()
+
+def tap(x, y):
+    start = state['start']
+
+    if start is None:
+        state['start'] = vector(x, y)
     else:
-        snake.pop(0)
+        shape = state['shape']
+        end = vector(x, y)
+        shape(start, end)
+        state['start'] = None
 
-    clear()
+def store(key, value):
+    state[key] = value
 
-    # Dibujar la serpiente con su color aleatorio
-    for body in snake:
-        square(body.x, body.y, 9, snake_color)
-
-    # Dibujar la comida con su color aleatorio
-    square(food.x, food.y, 9, food_color)
-    update()
-    ontimer(move, 100)
-
+state = {'start': None, 'shape': line}
 setup(420, 420, 370, 0)
-hideturtle()
-tracer(False)
+onscreenclick(tap)
 listen()
-onkey(lambda: change(10, 0), 'Right')
-onkey(lambda: change(-10, 0), 'Left')
-onkey(lambda: change(0, 10), 'Up')
-onkey(lambda: change(0, -10), 'Down')
-move()
+onkey(undo, 'u')
+onkey(lambda: color('black'), 'K')
+onkey(lambda: color('white'), 'W')
+onkey(lambda: color('green'), 'G')
+onkey(lambda: color('blue'), 'B')
+onkey(lambda: color('red'), 'R')
+onkey(lambda: store('shape', line), 'l')
+onkey(lambda: store('shape', square), 's')
+onkey(lambda: store('shape', circle), 'c')
+onkey(lambda: store('shape', rectangle), 'r')
+onkey(lambda: store('shape', triangle), 't')
 done()
